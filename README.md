@@ -2,14 +2,16 @@ This implements a variant of what is commonly known as the "Misra-Gries algorith
  Variants of it were discovered and rediscovered and redesigned several times over the years:
 
   "Finding repeated elements", Misra, Gries, 1982
+  
   "Frequency estimation of Internet packet streams with limited space", Demaine, Lopez-Ortiz, Munro, 2002
+  
   "A simple algorithm for finding frequent elements in streams and bags", Karp, Shenker, Papadimitriou, 2003
+  
   "Efficient Computation of Frequent and Top-k Elements in Data Streams", Metwally, Agrawal, Abbadi, 2006
 
 The current algorithm is based on:
 
-  "A High-Performance Algorithm for Identifying Frequent Items in Data Streams",
-      Anderson, Bevin, Lang, Liberty, Rhodes, Thaler, 2017
+  "A High-Performance Algorithm for Identifying Frequent Items in Data Streams",  Anderson, Bevin, Lang, Liberty, Rhodes, Thaler, 2017
 
 Algorithms 4&5 of https://conferences.sigcomm.org/imc/2017/papers/imc17-final255.pdf
  See: https://github.com/DataSketches/sketches-core/blob/master/src/main/java/com/yahoo/sketches/frequencies/ItemsSketch.java
