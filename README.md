@@ -73,11 +73,14 @@ The key difference between MG & the other probabilistic policies is that it allo
 There are several tunables that can be set when using MG is initialized:
 
 mg_tbl_sz: Size of the Misra-Gries table, default 8192
-MG_L: Number of entries to use for median calculation in algorithm, default 4*log2(mg_tbl_sz)
+
+mg_L: Number of entries to use for median calculation in algorithm, default 4*log2(mg_tbl_sz)
+
 
 There are several demonstation policies included:
 
 heavy_hitters.bro - uses regular SumStats SUM mechanism to track and report heavy hitters by IP.  In a production environment, this will likely cause an memory explosion.
+
 mg-heavy_hitters.bro - uses MG mechanism for same purpose, with much less memory usage.
 
 These policies use an undocumented feature of Sumstats to modify the sampling epoch to match the logging interval, so that it matches the default logging of other policies.  This is accomplished by storing the Sumstat in a global variable, rather than the usual practice of using an anonymous argument, which allows changing the epoch timeout during the epoch_finished function.
