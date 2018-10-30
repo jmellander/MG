@@ -85,6 +85,8 @@ heavy_hitters.bro - uses regular SumStats SUM mechanism to track and report heav
 
 mg-heavy_hitters.bro - uses MG mechanism for same purpose, with much less memory usage.
 
+
+
 These policies use an undocumented feature of Sumstats to modify the sampling epoch to match the logging interval, so that it matches the default logging of other policies.  This is accomplished by storing the Sumstat in a global variable, rather than the usual practice of using an anonymous argument, which allows changing the epoch timeout during the epoch_finished function.
 
 === INSTALLATION ===
