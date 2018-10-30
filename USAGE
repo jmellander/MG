@@ -28,7 +28,7 @@ There are several demonstation policies included:
 heavy_hitters.bro - uses regular SumStats SUM mechanism to track and report heavy hitters by IP.  In a production environment, this will likely cause an memory explosion.
 mg-heavy_hitters.bro - uses MG mechanism for same purpose, with much less memory usage.
 
-These policies use an undocumented feature of Sumstats to modify the sampling epoch to match the logging interval, so that it matches the default logging of other policies.
+These policies use an undocumented feature of Sumstats to modify the sampling epoch to match the logging interval, so that it matches the default logging of other policies.  This is accomplished by 
 
 === INSTALLATION ===
 

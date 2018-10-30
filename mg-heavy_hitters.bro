@@ -20,8 +20,7 @@ export {
 	};
 }
 
-const MIN_SAMPLE = 1024 &redef;		# Don't record samples less than this
-#const MIN_SAMPLE = 1 &redef;		# Don't record samples less than this
+const MIN_SAMPLE = 1 &redef;		# Don't record samples less than this
 
 global MGHeavyHitters::recurring_connection_observe: event(id: conn_id);
 
@@ -82,7 +81,6 @@ type interval_rec: record
 		# ASN lookup below: if lookup_asn() still worked :-(
 		#&default = function(ip: addr): string {return fmt("%d",lookup_asn(ip));};
 		# Country code lookup below
-		#&default = function(ip: addr): string {local t=lookup_location(ip); if (t?$country_code) return t$country_code; return "??";};
 		#&default = function(ip: addr): string {local t=lookup_location(ip); return t?$country_code ? t$country_code : "??";};
 		# Subnet code lookup below
 		#&default = function(ip: addr): string {return fmt("%s", mask_addr(ip, 16));};
@@ -113,20 +111,12 @@ event MGHeavyHitters::FirstTime() &priority = 10
 
 	intervals[0] = new_interval_rec();
 	intervals[0]$time_interval = 10 min;
-	#intervals[0]$time_interval = 5 min;
-	#intervals[0]$time_interval = 24 hr;
 
 	intervals[1] = new_interval_rec();
 	intervals[1]$time_interval = 1 hr;
-	#intervals[1]$time_interval = 15 min;
-	#intervals[1]$time_interval = 48 hr;
-	#intervals[1]$time_interval = 10 min;
 	
 	intervals[2] = new_interval_rec();
 	intervals[2]$time_interval = 2 hr;
-	#intervals[2]$time_interval = 1 hr;
-	#intervals[2]$time_interval = 96 hr;
-	#intervals[2]$time_interval = 20 min;
 
 	# Put additional intervals here - this will be the order in
 	#  which they are reported
@@ -175,8 +165,6 @@ function observe(c: connection)
 	local new_orig_bytes: count;
 	local new_resp_bytes: count;
 
-	#print current_time(), network_time(), "observe", print_id(id), "orig_bytes", orig_bytes, "resp_bytes", resp_bytes;
-
 	if (id in conns)
 		{
 		# Add in the difference between the last measurement and this one
@@ -189,7 +177,6 @@ function observe(c: connection)
 		# Also, some connections aren't captured until they end, so are not in conns.
 		#  These appear to be connections instantiated by a broadcast request (Netbios, DHCP)
 		#  that are responded to by a specific host, so they are captured here, too.
-		#print current_time(),network_time(), "observe - missing connection", id;
 
 		new_orig_bytes = orig_bytes;
 		new_resp_bytes = resp_bytes;
@@ -197,7 +184,6 @@ function observe(c: connection)
 		# Add to conns
 		local c1: conn_rec;
 		conns[id] = c1;
-		#print current_time(), network_time(), "add_to_conns", print_id(id), "|conns|", |conns|;
 		}
 
 	# Update conns record
@@ -237,7 +223,6 @@ function observation_schedule(id: conn_id)
 		#  expired connections around for too long (until the end of the epoch)
 		if (next_observation > now + 10 min)    next_observation = now + 10 min;
 
-		#print current_time(), now, id, "next observation", next_observation;
 		schedule next_observation - now
 			{ MGHeavyHitters::recurring_connection_observe(id) };
 		}
@@ -253,8 +238,6 @@ event MGHeavyHitters::recurring_connection_observe(id: conn_id)
 		observe(lookup_connection(id));
 
 		# Next observation
-		#print network_time(), "connection observe, reschedule";
-		# 
 		observation_schedule(id);
 		}
 	}
@@ -272,9 +255,7 @@ event new_connection(c: connection)
 # When connection ends, perform final observation
 event connection_state_remove(c: connection)
 	{
-	#print current_time(), network_time(), "connection_state_remove",print_id(c$id), c$orig$num_bytes_ip,c$resp$num_bytes_ip;
 	observe(c);
-	#print current_time(), network_time(), "remove_from_conns", print_id(c$id), "|conns|", |conns|;
 	delete conns[c$id];
 	}
 
@@ -300,8 +281,6 @@ function sort_step(ip: string, which: count)
 		intervals[which]$sort_buckets[bucket_num] = set();
 
 	add intervals[which]$sort_buckets[bucket_num][ip];
-
-	#print current_time(), ip, which, "bucket", bucket_num;
 	}
 
 # Return the top Num_to_report hosts from ip_tbl
@@ -318,20 +297,14 @@ function sort_ips(host_counts: host_tbl, buckets: table[count] of set[string], N
 	local ret_vec: vector of string;
 	local hi_bucket = 0;
 
-	local t = current_time();
-
 	if (|host_counts| <= Num_to_report)
 		{
 		# If we have less IPs than we want to report, then just put them all in
 		for (ip in host_counts)
 			sort_vec[|sort_vec|] = [ $ip = ip, $byte_count = host_counts[ip] ];
-		#print "|sort_vec|", |sort_vec|;
 		}
 	else
 		{
-
-		local st = "buckets ";
-
 		for (idx in buckets)	if (idx > hi_bucket)	hi_bucket = idx;
 
 		# Consolidate buckets until we have enough, counting down
@@ -345,42 +318,24 @@ function sort_ips(host_counts: host_tbl, buckets: table[count] of set[string], N
 					add s[ip];
 					sort_vec[|sort_vec|] = [ $ip = ip, $byte_count = host_counts[ip] ];
 					}	
-
-				st = fmt("%s |%d|=%d,", st, hi_bucket, |buckets[hi_bucket]|);
-				
 				if (|s| >= Num_to_report)	break;
 				}
 
 			if (hi_bucket == 0)	break;
 			--hi_bucket;
 			}
-
-		# Now copy the set into the vector for sorting, along with counts
-		#for (ip in s)	sort_vec[|sort_vec|] = [ $ip = ip, $byte_count = host_counts[ip] ];
-
-		#print "|sort_vec|", |sort_vec|, st;
-
 		}
 
 	# Sort buckets we're considering
 
-	#sort(sort_vec, function(ip1: host_rec, ip2: host_rec): int { return ip2$byte_count - ip1$byte_count; });
-
 	# Mitigation for 64-bit problem with sort()
-	# sort(sort_vec, function(ip1: host_rec, ip2: host_rec): int { local a=ip1$byte_count; local b=ip2$byte_count; if (b > a) return 1; if (b < a) return -1; return 0; });
 	sort(sort_vec, function(ip1: host_rec, ip2: host_rec): int { if (ip2$byte_count > ip1$byte_count) return 1; if (ip2$byte_count < ip1$byte_count) return -1; return 0; });
 
 	# Put into vector of addresses
 	for (idx in sort_vec)	ret_vec[idx] = sort_vec[idx]$ip;
-#		{
-#		if (idx > Num_to_report)	break;
-#		ret_vec[idx] = sort_vec[idx]$ip;
-#		}
 
 	# and size to correct amount
 	if (|ret_vec| > Num_to_report)	resize(ret_vec, Num_to_report);
-
-	#print "Sort took", current_time() - t;
 
 	return ret_vec;
 	}
@@ -395,29 +350,22 @@ function do_report(which: count)
 	local running_total = 0;
 	for (i in output)
 		{
-		#rec$group = output[i];
 		rec$bytes_out = intervals[which]$hosts[output[i]];
 		rec$info = intervals[which]$report_function(rec$start_time, rec$end_time, output[i]);
 		Log::write(MGHeavyHitters::LOG, rec);
 
 		running_total += intervals[which]$hosts[output[i]];
-		#print network_time(), output[i], intervals[which]$hosts[output[i]];
 		}
 
 	# Non reported IPs - this is Grand Total - running total
-	#rec$group = "Other";
 	rec$bytes_out = intervals[which]$grand_total - running_total;
 	rec$info = intervals[which]$report_function(rec$start_time, rec$end_time, "Other");
 	if (rec$bytes_out > 0)	Log::write(MGHeavyHitters::LOG, rec);
 
 	# Grand total
-	#rec$group = "Grand Total";
 	rec$bytes_out = intervals[which]$grand_total;
 	rec$info = intervals[which]$report_function(rec$start_time, rec$end_time, "Grand Total");
 	if (rec$bytes_out > 0)	Log::write(MGHeavyHitters::LOG, rec);
-	
-	#print output;
-	#flush_all();	#*******
 	}
 
 
@@ -427,11 +375,6 @@ global hh: SumStats::SumStat;	# Needs to be a global, so it can be modified in e
 event MGHeavyHitters::FirstTime()
 	{
 
-	#print network_time(), "FirstTime", fmt("%s", 127.0.0.1);
-	#flush_all();	#*******
-
-	epoch_in_progress = F;
-
 	local red: SumStats::Reducer = [$stream="MG-HeavyHitters", $apply=set(SumStats::MG)];
 
 	hh = [$name="MG-HeavyHitters", 
@@ -439,20 +382,9 @@ event MGHeavyHitters::FirstTime()
 		$reducers=set(red),
 		$epoch_result(ts: time, key: SumStats::Key, result: SumStats::Result) =
 			{
-			local result_time = current_time();
-			if (! epoch_in_progress)
-				{
-				epoch_in_progress = T;
-				epoch_start = network_time();
-				epoch_start_real_time = current_time();
-				epoch_wall_time = 0 sec;
-				epoch_result_count = 0;
-				#print "epoch start", current_time();
-				}
 			# Called for each result - in this case, there is only one result
 			#  Which returns a table of HeavyHitters
 			local r = result["MG-HeavyHitters"];
-			#print "HeavyHitters, r=",r;
 			local ips = SumStats::MG_TopK(r, 20);
 			for (res in ips)
 				{
@@ -479,7 +411,6 @@ event MGHeavyHitters::FirstTime()
 							intervals[which]$hosts[ip_str] = amt;
 
 						sort_step(ip_str, which);	# Incremental sort step
-						#intervals[which]$grand_total += amt;
 						}
 					}
 				}
@@ -487,18 +418,9 @@ event MGHeavyHitters::FirstTime()
 			# Not strictly correct, but no way around it...
 			for (which in intervals)
 				intervals[which]$grand_total += double_to_count(r$mg_grand_total);
-
-			#print current_time(), ts, ip, amt;
-			#flush_all();	#*******
-			#++epoch_result_count;
-			#epoch_wall_time = epoch_wall_time + current_time() - result_time;
 			},
 		$epoch_finished(ts: time) = 
 			{
-			#print network_time(), "epoch_finished",|intervals[0]$hosts|,|intervals[1]$hosts|,|intervals[2]$hosts|;
-			#flush_all();	#*******
-			#local result_time = current_time();
-
 			local which: count;
 
 			for (which in intervals)
@@ -506,7 +428,6 @@ event MGHeavyHitters::FirstTime()
 				# Here check trigger times for intervals, and report & reset if reached
 				if (network_time() >= intervals[which]$end_time || bro_is_terminating())
 					{
-					#print network_time(),"report which", which, |intervals[which]$hosts|;
 					do_report(which);
 
 					# Reset stats for next time & update interval
@@ -516,31 +437,8 @@ event MGHeavyHitters::FirstTime()
 					reset_interval_rec(intervals[which]);
 					}
 				}
-			#next_sample = next_sample + sampling_interval;
 
-
-			#epoch_wall_time = epoch_wall_time + current_time() - result_time;
-
-			#print network_time(), "epoch took", network_time()-epoch_start, current_time()-epoch_start_real_time, epoch_wall_time;
-			#print network_time(), "Average time/result", epoch_wall_time/epoch_result_count;
-			#print "calc_next_rotate 10 min", calc_next_rotate(10 min);
-			#print "epoch end", current_time();
-			epoch_in_progress = F;
-
-
-			#local output = sort_ips(interval_hosts[0], sort_buckets[0], 10);
-			#for (i in output)
-			#	{
-			#	print current_time(), network_time(), output[i], interval_hosts[0][output[i]];
-			#	}
-			#print output;
-			#flush_all();	#*******
-			
-			#terminate();	# FIXME: just bail for now - we can look in .state to see how things look
-
-			#hh$epoch = 1 min;	# ******* Test of changing epoch
 			hh$epoch = calc_next_rotate(sampling_interval);
-
 			next_sample = network_time() + hh$epoch;
 			}
 		] ;
