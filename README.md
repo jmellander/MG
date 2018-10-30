@@ -101,3 +101,6 @@ and add the line
 then put mg.bro into the directory share/bro/base/frameworks/sumstats/plugins
 
 
+=== PRESENTATION ===
+
+Please see the slide deck for further details.
