@@ -14,11 +14,13 @@ The current algorithm is based on:
   "A High-Performance Algorithm for Identifying Frequent Items in Data Streams",  Anderson, Bevin, Lang, Liberty, Rhodes, Thaler, 2017
 
 Algorithms 4&5 of https://conferences.sigcomm.org/imc/2017/papers/imc17-final255.pdf
+
  See: https://github.com/DataSketches/sketches-core/blob/master/src/main/java/com/yahoo/sketches/frequencies/ItemsSketch.java
   for the authors' Java implementation
   ReversePurgeItemHashMap.java has the purge (DecrementCounters in the paper) implementation
 
 See algorithm 4 in the paper for the basic concept.
+
  The UpdateCounters() algorithm as presented in the paper is a "stop the world" implementation, that
  is probably not the best choice for a realtime application like Bro.  So, this implementation uses
  a lazy delete algorithm.  Our lazy algorithm is as follows:

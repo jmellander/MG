@@ -168,8 +168,18 @@ function observe(c: connection)
 	if (id in conns)
 		{
 		# Add in the difference between the last measurement and this one
-		new_orig_bytes = orig_bytes - conns[id]$orig_bytes_out;
-		new_resp_bytes = resp_bytes - conns[id]$resp_bytes_out;
+		#  Could be less if udp, etc., so do the best we can....
+		#  (possibly a bro bug)
+		local oo = conns[id]$orig_bytes_out;
+		if (orig_bytes < oo)
+			new_orig_bytes = orig_bytes;
+		else
+			new_orig_bytes = orig_bytes - oo;
+		local ro = conns[id]$resp_bytes_out;
+		if (resp_bytes < ro)
+			new_resp_bytes = resp_bytes;
+		else
+			new_resp_bytes = resp_bytes - ro;
 		}
 	else
 		{
