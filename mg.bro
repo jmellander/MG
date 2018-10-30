@@ -1,6 +1,6 @@
 ##! MG algorithm, SMED extension, Jim Mellander, ESNet
 
-# $Id: mg.bro,v 1.2 2018/10/29 19:04:03 melland Exp melland $
+# $Id: mg.bro,v 1.1 2018/10/30 17:48:41 melland Exp melland $
 
 # Copyright (c) 1995-2018, The Regents of the University of California
 # through the Lawrence Berkeley National Laboratory and the
@@ -213,7 +213,7 @@ event MG_periodic(rv: ResultVal)
 function MG_Update(rv: ResultVal, key: string, val: double)
 	{
 	if (val <= 0.0)	return;
-	local tt = current_time();
+	#local tt = current_time();
 	++rv$sample_elements;
 	rv$mg_grand_total += val;
 	local mg_tbl = rv$mg_tbl;
