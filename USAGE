@@ -18,7 +18,7 @@ SumStats::observe( "MySumStats", [], [$str=fmt("%s",my_host), $num=bytes] );
 
 The key difference between MG & the other probabilistic policies is that it allows an amount (typically a byte-count) to be observed along with a string (referred to as the key - although as noted previously, it doesn't use the Key field) that the amount refers to.  MG maintains a data structure that captures the sum of observation amounts by the key, and provides that data structure as the single result.  In line with other probabilistic policies, a function that efficiently provides a TopK of that data structure is provided, so that the Heavy Hitters can be identified.
 
-There are several tunables that can be set when SumStats with MG is initialized:
+There are several tunables that can be set when using MG is initialized:
 
 mg_tbl_sz: Size of the Misra-Gries table, default 8192
 MG_L: Number of entries to use for median calculation in algorithm, default 4*log2(mg_tbl_sz)
@@ -27,6 +27,8 @@ There are several demonstation policies included:
 
 heavy_hitters.bro - uses regular SumStats SUM mechanism to track and report heavy hitters by IP.  In a production environment, this will likely cause an memory explosion.
 mg-heavy_hitters.bro - uses MG mechanism for same purpose, with much less memory usage.
+
+These policies use an undocumented feature of Sumstats to modify the sampling epoch to match the logging interval, so that it matches the default logging of other policies.
 
 === INSTALLATION ===
 
