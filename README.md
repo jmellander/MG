@@ -17,6 +17,7 @@ Algorithms 4&5 of https://conferences.sigcomm.org/imc/2017/papers/imc17-final255
 
  See: https://github.com/DataSketches/sketches-core/blob/master/src/main/java/com/yahoo/sketches/frequencies/ItemsSketch.java
   for the authors' Java implementation
+
   ReversePurgeItemHashMap.java has the purge (DecrementCounters in the paper) implementation
 
 See algorithm 4 in the paper for the basic concept.
@@ -58,7 +59,7 @@ Sumstats provides summary statistics (generally of network events) on a periodic
 
 Non-probabilistic SumStats obserations are made with a Key (either a host IP address, or a string) and an Observation (either a numeric value, or a string).  Each distinct Key creates a table on every worker that takes an Observation on that Key.
 
-Probabilistic SumStats policies (HLL - HyperLogLog, TopK, and this one, MG) necessarily use an internal data structure to store their data, and a Key is not used, as this would obviate the memory advantages of using these policies.  HLL & TopK both take unit observations, and push their input to SumStats via the string Observation$str. MG uses Observation$str in place of the key & Observation$num to store the value.  Below are some examples for clarity:
+Probabilistic SumStats policies (HLL - HyperLogLog, TopK, and this one, MG) necessarily use an internal data structure to store their data, and a Key is not used, as this would obviate the memory advantages of using these policies.  HLL & TopK both take unit observations, and push their input to SumStats via the string Observation$str. MG uses Observation$str in place of the key & Observation$num to store the value.  Below are some examples for clarity (Arguments are: Sumstat Name, Key, Observation):
 
 Non-probabilistic SumStats:
 SumStats::observe( "MySumStats", [$host=my_host], [$num=bytes] );
